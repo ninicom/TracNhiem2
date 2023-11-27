@@ -1,0 +1,357 @@
+﻿@model IEnumerable<Question>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trò chơi trắc nghiệm</title>
+    <style>
+
+        .question {
+            display: block;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .answer {
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .questionText {
+            margin-top: 10px;
+            margin-left: 10px;
+            flex-grow: 1;
+            resize: none;
+            height: auto;
+            min-height: 2em;
+            max-height: 10em;
+            width: 100%;
+        }
+        textarea {
+            resize: none;
+            border: none;
+        }
+
+        .optionAS{
+            width: 100%;
+            display: flex;
+        }            
+
+            .optionAS textarea{
+                margin-top: 10px;
+                margin-left: 10px;
+                flex-grow: 1;
+                resize: none;
+                height: auto;
+                min-height: 2em;
+                max-height: 10em;
+                width: 100%;                
+            }
+
+            .optionAS input[type="radio"] {
+                margin: auto;
+            }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div id="question"></div>
+    <div id="quiz"></div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="modalQuestion">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="btn-close" style="border:none;" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="Id">
+                    <div class="form-group">
+                        <label>Câu hỏi:</label>
+                        <textarea name="textarea" rows="3" class="form-control questionText" id="content" placeholder="Nhập câu hỏi tại đây"></textarea>
+                    </div>
+                    <div class="options">
+                        <label>Câu trả lời:</label>
+                        <label class="optionAS">
+                            <input type="radio" name="option" value="A">
+                            <textarea name="textarea" class="form-control" id="answer1" placeholder="Nhập đáp án tại đây"></textarea>
+                        </label>
+                        <label class="optionAS">
+                            <input type="radio" name="option" value="B">
+                            <textarea name="textarea" class="form-control" id="answer2" placeholder="Nhập đáp án tại đây"></textarea>
+                        </label>
+                        <label class="optionAS">
+                            <input type="radio" name="option" value="C">
+                            <textarea name="textarea" class="form-control" id="answer3" placeholder="Nhập đáp án tại đây"></textarea>
+                        </label>
+                        <label class="optionAS">
+                            <input type="radio" name="option" value="D">
+                            <textarea name="textarea" class="form-control" id="answer4" placeholder="Nhập đáp án tại đây"></textarea>
+                        </label>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 10px;">
+                        <button type="button" class="btn btn-primary" id="btnAddQ">Thêm</button>
+                        <button type="button" class="btn btn-primary" id="btnUpdateQ">Sửa</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <script type="text/javascript">
+        // hiển thị câu hỏi
+        function loadQuestion(question) {            
+            var html = '<div class="question form-control">';
+            // hiển thị câu hỏi cùng với hai phím chức năng
+            html += '<div style="display: flex; width: 100%;">'
+            html += '<h3 style="flex: 1"><textarea readonly name="textarea" style="width: 100%">' + question.content + '</textarea></h3>';
+            html += '<div style="width: 109px;">';
+            html += '<button type="button" class="btn btn-success" style="margin-right: 2px;margin-left: 2px;" onclick="getbyQuestionId(' + question.id + ')"> Sửa </button>';
+            html += '<button type="button" class="btn btn-danger" onclick="deleteQ(' + question.id + ',\'' + question.content + '\')"> Xoá </button>' + '</td>';
+            html += '</div>';
+            html += '</div>';
+            // hiển thị các đáp án
+            html += '<textarea readonly name="textarea" rows="1" class="answer form-control" data-correct="' + (question.correctAnswer == 'A') + '">' + question.answer1 + '</textarea>';
+            html += '<textarea readonly name="textarea" rows="1" class="answer form-control" data-correct="' + (question.correctAnswer == 'B') + '">' + question.answer2 + '</textarea>';
+            html += '<textarea readonly name="textarea" rows="1" class="answer form-control" data-correct="' + (question.correctAnswer == 'C') + '">' + question.answer3 + '</textarea>';
+            html += '<textarea readonly name="textarea" rows="1" class="answer form-control" data-correct="' + (question.correctAnswer == 'D') + '">' + question.answer4 + '</textarea>';
+                
+            html += '</div>';
+            // tự dộng co dãn dòng
+            autosize(document.querySelectorAll('textarea'));
+            $('#quiz').append(html);
+            $('.answer').each(function () {
+                // Kiểm tra xem đáp án có đúng hay không
+                var isCorrect = $(this).data('correct');
+                // Nếu đáp án đúng, thay đổi màu sắc của phần tử đáp án
+                if (isCorrect) {
+                    $(this).css('background-color', '#77FF90');
+                }
+            });            
+        }
+        // tạo sự kiện cho nút thêm câu hỏi
+        
+        $(document).ready(function () {
+            autosize(document.querySelectorAll('textarea'));
+            var groupId = window.location.search.split('=')[1]; // Lấy id từ URL
+            if (groupId == null) {
+                $('#question').append('Trang web không tồn tại');
+                return;
+            }
+            $('#question').append('<button type="button" class="btn btn-success" id="btnAdd">Thêm nhóm câu hỏi</button>');
+            $('#btnAdd').click(function () {
+                if ($('#Id').val() != null) {
+                    clearData();
+                }
+                $('#modalTitle').text('Thêm mới nhóm câu hỏi');
+                $('#modalQuestion').modal('show');
+                $('#btnUpdateQ').hide();
+                $('#btnAddQ').show();
+            });
+            loadListQuestion();
+
+        });
+        function loadListQuestion() {
+            clearData();
+            var groupId = window.location.search.split('=')[1]; // Lấy id từ URL            
+            $.ajax({
+                url: '/Question/GetQuestionByGroup?groupId=' + groupId, // Đường dẫn đến action lấy danh sách câu hỏi
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    questions = data.question;
+                    $('#quiz').empty();
+                    $.each(data.question, function (key, value) {
+                        loadQuestion(value);
+                    });
+                }
+            });
+        }
+        $('#btnAddQ').click(function () {
+            if (!validateQ()) {
+                return;
+            }
+            let content = $('#content').val().trim();
+            let answer1 = $('#answer1').val().trim();
+            let answer2 = $('#answer2').val().trim();
+            let answer3 = $('#answer3').val().trim();
+            let answer4 = $('#answer4').val().trim();
+            let correctAnswer = document.querySelector('input[name="option"]:checked').value;
+            var groupId = window.location.search.split('=')[1]; // Lấy id từ URL
+            $.ajax({
+                url: '/Question/CreateQuestion',
+                type: 'POST',
+                data: {
+                    content: content,
+                    answer1: answer1,
+                    answer2: answer2,
+                    answer3: answer3,
+                    answer4: answer4,
+                    correctAnswer: correctAnswer,
+                    groupId: groupId,
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert(data.msg);
+                        //clearData();
+                        loadListQuestion();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        })
+
+        // sửa câu hỏi
+        $('#btnUpdateQ').click(function () {
+            if (!validateQ()) {
+                return;
+            }
+            let id = $('#Id').val();
+            let content = $('#content').val().trim();
+            let answer1 = $('#answer1').val().trim();
+            let answer2 = $('#answer2').val().trim();
+            let answer3 = $('#answer3').val().trim();
+            let answer4 = $('#answer4').val().trim();
+            let correctAnswer = document.querySelector('input[name="option"]:checked').value;
+            var groupId = window.location.search.split('=')[1]; // Lấy id từ URL
+            $.ajax({
+                url: '/Question/UpdateQuestion',
+                type: 'PUT',
+                data: {
+                    id: id,
+                    content: content,
+                    answer1: answer1,
+                    answer2: answer2,
+                    answer3: answer3,
+                    answer4: answer4,
+                    correctAnswer: correctAnswer,
+                    groupId: groupId,
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert(data.msg);
+                        //clearData();
+                        loadListQuestion();
+                        $('#modalQuestion').modal('hide');
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+        // xóa câu hỏi
+        function getbyQuestionId(Id) {
+            $('#content').css('border-color', 'lightgrey');
+            $('#answer1').css('border-color', 'lightgrey');
+            $('#answer2').css('border-color', 'lightgrey');
+            $('#answer3').css('border-color', 'lightgrey');
+            $('#answer4').css('border-color', 'lightgrey');
+            $.ajax({
+                url: "/Question/GetQuestionById",
+                type: "get",
+                datatype: "json",
+                data: {
+                    Id: Id,
+                },
+                success: function (data) {
+                    $('#Id').val(data.question.id);
+                    $('#content').val(data.question.content);
+                    $('#answer1').val(data.question.answer1);
+                    $('#answer2').val(data.question.answer2);
+                    $('#answer3').val(data.question.answer3);
+                    $('#answer4').val(data.question.answer4);
+                    document.querySelector('input[name="option"][value="'+ data.question.correctAnswer +'"]').checked = true;
+
+                    $('#modaltitle').text('Sửa nhóm câu hỏi');
+                    $('#modalQuestion').modal('show');
+                    $('#btnUpdateQ').show();
+                    $('#btnAddQ').hide();
+                }
+            });
+        };
+        function deleteQ(id, content) {
+            var ans = confirm("bạn có muốn xoá nhóm câu hỏi \"" + content + "\" không?");
+            if (ans) {
+                $.ajax({
+                    url: '/Question/deleteQuestion',
+                    type: 'delete',
+                    datatype: 'json',
+                    data: {
+                        id: id,
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            loadListQuestion();
+                            $('#modalQuestion').modal('hide');
+                        }
+                        else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        };
+        function validateQ() {
+            let content = $('#content').val().trim();
+            let answer1 = $('#answer1').val().trim();
+            let answer2 = $('#answer2').val().trim();
+            let answer3 = $('#answer3').val().trim();
+            let answer4 = $('#answer4').val().trim();
+            let correctAnswer = document.querySelector('input[name="option"]:checked');
+            if (content === '' || answer1 === '' || answer2 === '' || answer3 === '' || answer4 === '') {
+                // Nếu có ô nhập văn bản không có giá trị, thêm hiệu ứng viền đỏ
+                $('#content, #answer1, #answer2, #answer3, #answer4').css('border-color', 'red');
+                alert('Vui lòng nhập đầy đủ thông tin câu hỏi!');
+                return false;
+            } else {
+                // Nếu tất cả các ô nhập văn bản đều có giá trị, thêm hiệu ứng viền xanh
+                $('#content, #answer1, #answer2, #answer3, #answer4').css('border-color', 'green');
+                if (correctAnswer == null) {
+                    alert('Vui lòng chọn đáp án đúng!');
+                    return false;
+                }
+                // Thực hiện các thao tác khác ở đây
+                return true;
+                // ...
+            }
+        };
+        $('textarea').on('blur', function () {
+            // Kiểm tra xem ô nhập văn bản có giá trị hay không
+            if ($(this).val().trim() === '') {
+                // Nếu ô nhập văn bản không có giá trị, thêm hiệu ứng viền đỏ
+                $(this).css('border-color', 'red');
+            } else {
+                // Nếu ô nhập văn bản có giá trị, thêm hiệu ứng viền xanh
+                $(this).css('border-color', 'green');
+            }
+        });
+        function clearData(){
+            $('#Id').val('');
+            $('#content').val('');
+            $('#answer1').val('');
+            $('#answer2').val('');
+            $('#answer3').val('');
+            $('#answer4').val('');
+            $('input[name="option"]:checked').prop('checked', false);
+        };
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,64 @@
+﻿@model IEnumerable<QuestionGroup>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<head>
+    <title>Danh sách nhóm câu hỏi</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .questionGroup {
+            border-radius: 10px;
+        }
+
+        .questionGroup {
+            border-radius: 15px;
+            background-color: #1E90FF; /* Màu xanh nước biển */
+            color: white; /* Màu chữ trắng */
+            font-size: 20px; /* Kích thước chữ */
+            padding: 10px; /* Padding để tăng kích thước button */
+            border: none; /* Bỏ viền */
+            cursor: pointer; /* Thay đổi con trỏ khi di chuột qua */
+            transition: 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+            margin: 10px;
+        }
+
+            .questionGroup:hover {
+                background-color: #00BFFF; /* Thay đổi màu khi di chuột qua */
+            }
+    </style>
+</head>
+<body>
+    <h3>Chọn nhóm câu hỏi</h3>
+    <div id="questionGroupList"></div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+                url: '/QuestionGroup/GetQuestionGroups', // Đường dẫn đến action lấy danh sách nhóm câu hỏi
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var html = '';
+                    console.log(data);
+                    $.each(data.questionGroups, function (key, item) {
+                        // console.log('Key:', key); // In ra giá trị của key
+                        // console.log('Item:', item); // In ra giá trị của item
+                        html += '<div class="questionGroup" data-id="' + item.id + '" >';
+                        html += '<h2>' + item.name + '</h2>'; // Tên nhóm câu hỏi
+                        html += '<p>' + item.description + '</p>'; // Mô tả nhóm câu hỏi
+                        html += '</div>';
+                    });
+                    $('#questionGroupList').html(html);
+                }
+            });
+
+            $('#questionGroupList').on('click', '.questionGroup', function () {
+                var id = $(this).data('id');
+                window.location.href = './Question/CRUD_Question?id=' + id; // Đường dẫn đến trang trò chơi trắc nghiệm
+            });
+
+        });
+    </script>
+</body>

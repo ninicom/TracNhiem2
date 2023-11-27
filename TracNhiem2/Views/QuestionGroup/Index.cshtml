@@ -1,0 +1,225 @@
+﻿@model IEnumerable<QuestionGroup>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<!DOCTYPE html>
+<head>
+    <style>
+        .questionGroup {
+            border-radius: 10px;
+        }
+
+        .questionGroup {
+            border-radius: 15px;
+            background-color: #1E90FF; /* Màu xanh nước biển */
+            color: white; /* Màu chữ trắng */
+            font-size: 20px; /* Kích thước chữ */
+            padding: 10px; /* Padding để tăng kích thước button */
+            border: none; /* Bỏ viền */
+            cursor: pointer; /* Thay đổi con trỏ khi di chuột qua */
+            transition: 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+            margin: 10px;
+        }
+
+            .questionGroup:hover {
+                background-color: #00BFFF; /* Thay đổi màu khi di chuột qua */
+            }
+    </style>
+</head>
+<button type="button" class="btn btn-success" id="btnAdd">Thêm câu hỏi</button>
+<table class="table">
+    <thead>
+        <tr>
+            <th class="col-sm-3">Nhóm câu hỏi</th>
+            <th class="col-sm-6">Mô tả</th>
+            <th class="col-sm-3">Chức năng</th>
+        </tr>
+    </thead>
+    <tbody id="idQuestionGroups">
+    </tbody>
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalQuestionGroup">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" style="border:none;" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="Id">
+                <div class="form-group">
+                    <label>Nhóm câu hỏi:</label>
+                    <input type="text" class="form-control" id="nameQuestionGroup" placeholder="Tên nhóm câu hỏi">
+                </div>
+                <div class="form-group">
+                    <label>Mô tả:</label>
+                    <input type="text" class="form-control" id="Description" placeholder="Mô tả về nhóm câu hỏi">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnAddQG">Thêm</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateQG">Sửa</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            loaddsQG();
+        });
+        $('#btnAdd').click(function () {
+            $('#modalTitle').text('Thêm mới nhóm câu hỏi');
+            $('#modalQuestionGroup').modal('show');
+            if ($('#Id').val() != null) {
+                clearData();
+            }
+            $('#btnUpdateQG').hide();
+            $('#btnAddQG').show();
+        });
+        $('#btnAddQG').click(function () {
+            let nameQuestionGroup = $('#nameQuestionGroup').val().trim();
+            let Description = $('#Description').val().trim();
+            if (nameQuestionGroup.length == 0 || Description.length == 0) {
+                alert('Hãy nhập đủ dữ liệu');
+                return;
+            }
+            $.ajax({
+                url: '/QuestionGroup/CreateQuestionGroup',
+                type: 'POST',
+                data: {
+                    name: nameQuestionGroup,
+                    description: Description,
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert(data.msg);
+                        //clearData();
+                        loaddsQG();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+
+        });
+        $('#btnUpdateQG').click(function () {
+            let id = parseInt($("#Id").val());
+            let nameQuestionGroup = $('#nameQuestionGroup').val().trim();
+            let Description = $('#Description').val().trim();
+            if (nameQuestionGroup.length == 0 || Description.length == 0) {
+                alert('Hãy nhập đủ dữ liệu');
+                return;
+            }
+            $.ajax({
+                url: '/QuestionGroup/UpdateQuestionGroup',
+                type: 'put',
+                data: {
+                    Id: id,
+                    name: nameQuestionGroup,
+                    Description: Description
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert(data.msg);
+                        clearData();
+                        loaddsQG();
+                        $('#modalQuestionGroup').modal('hide');
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+        function loaddsQG() {
+            $.ajax({
+                url: '/QuestionGroup/GetQuestionGroups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.code == 200) {
+                        var tbody = $('#idQuestionGroups');
+                        tbody.empty();
+                        clearData();
+                        $.each(data.questionGroups, function (key, value) {
+                            let tr = "<tr>";
+                            tr += '<td>' + value.name + '</td>';
+                            tr += '<td>' + value.description + '</td>';
+                            tr += '<td>' + '<button type="button" class="btn btn-success" style="margin-right: 2px;" onclick="getbyQuestionGroupId(\'' + value.id + '\')"> Sửa </button>'
+                                + '<button type="button" class="btn btn-danger" onclick="deleteQG(' + value.id + ',\'' + value.name + '\')"> Xoá </button>' + '</td>';
+                            tr += "</tr>";
+                            tbody.append(tr);
+                        });
+                    }
+
+
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX Error: ', status, error);
+                }
+            });
+        }
+        function clearData() {
+            $('#Id').val('');
+            $('#nameQuestionGroup').val('');
+            $('#Description').val('');
+        //     $('#ngaySinh').val('');
+        //     $('#diaChi').val('');
+        }
+        function getbyQuestionGroupId(Id) {
+            $('#nameQuestionGroup').css('border-color', 'lightgrey');
+            $('#Description').css('border-color', 'lightgrey');            
+            $.ajax({
+                url: "/QuestionGroup/GetQuestionGroupById",
+                type: "get",
+                datatype: "json",
+                data: {
+                    Id: Id,
+                },
+                success: function (data) {
+                    $('#Id').val(data.questionGroup.id);
+                    $('#nameQuestionGroup').val(data.questionGroup.name);
+                    $('#Description').val(data.questionGroup.description);
+                    
+                    $('#modaltitle').text('Sửa nhóm câu hỏi');
+                    $('#modalQuestionGroup').modal('show');
+                    $('#btnUpdateQG').show();
+                    $('#btnAddQG').hide();
+                }
+            });
+        };
+        function deleteQG (id, name) {
+            var ans = confirm("bạn có muốn xoá nhóm câu hỏi \"" + name + "\" không?");
+            if (ans) {
+                $.ajax({
+                    url: '/Questiongroup/deleteQuestionGroup',
+                    type: 'delete',
+                    datatype: 'json',
+                    data: {
+                        id: id,
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            loaddsQG();
+                        }
+                        else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        };
+    </script>;
+}

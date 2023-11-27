@@ -1,0 +1,60 @@
+﻿@model IEnumerable<TracNhiem2.Models.SingleResult>
+
+@{
+    ViewData["Title"] = "Score";
+    ;
+}
+<a href="/">
+    <button type="button" class="btn btn-primary" id="btnBack">Quay lại</button>
+</a>
+<h1>Result</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                Tên của bạn
+            </th>
+            <th>
+                Mã Nhóm đề tài
+            </th>
+            <th>
+                Điểm số
+            </th>
+            <th>Thời gian hoàn thành</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdQuestionGroup)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Score)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ComCompletionTime)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@* <input type="text" id="Kq" placeholder="nhap ket qua muon xoa" />
+
+<button id="delete" >
+        <a style="text-decoration: none;" asp-action="Delete" >Xoa Ket Qua</a>
+</button>
+ *@
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

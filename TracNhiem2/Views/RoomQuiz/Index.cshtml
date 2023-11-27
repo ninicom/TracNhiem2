@@ -1,0 +1,70 @@
+﻿<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<head>
+    <style>
+        
+
+        #joinButton, #createButton {
+            width: 181px;
+            margin: auto;
+            border-radius: 5px;
+            background-color: #1E90FF; /* Màu xanh nước biển */
+            color: white; /* Màu chữ trắng */
+            font-size: 20px; /* Kích thước chữ */
+            padding: 10px 20px; /* Padding để tăng kích thước button */
+            border: none; /* Bỏ viền */
+            cursor: pointer; /* Thay đổi con trỏ khi di chuột qua */
+            text-align: center;
+            transition: 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+        }
+
+            #joinButton:hover, #createButton:hover {
+                background-color: #00BFFF; /* Thay đổi màu khi di chuột qua */
+            }
+    </style>
+</head>
+<a href="/">
+    <button type="button" class="btn btn-primary" id="btnBack">Quay lại</button>
+</a>
+<div id="isShow" style="display: none;padding-top:150px">
+    <div class="container">
+        <div class="row">&nbsp;</div>
+        <div class="row" style="width: 100%">
+            <input class="form-control" id="Name" disabled style="text-align:center; width:auto; margin: auto" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row" style="width: 100%">
+                <input type="button" id="joinButton" value="Vào phòng" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row" style="width: 100%">
+                <input type="button" id="createButton" value="Tạo phòng" />
+        </div>
+    </div>
+</div>
+<script src="~/js/checkPlayer.js"></script>
+<script type="text/javascript">
+    function showName() {
+        var user_name = localStorage.getItem('user_name');
+        var user_id = localStorage.getItem('user_id');
+        if (user_id == null || user_id == '') {
+            window.location.href = './Player'; // Đường dẫn đến trang trò chơi trắc nghiệm
+        }
+        $("#Name").val(user_name);
+    }
+
+    document.getElementById("joinButton").addEventListener("click", function (event) {
+        window.location.href = 'RoomQuiz/JoinRoom';
+    });
+
+    document.getElementById("createButton").addEventListener("click", function (event) {
+        window.location.href = 'RoomQuiz/CreateRoom';
+    });
+    
+
+    $(document).ready(function () {
+        var element = document.getElementById("isShow");
+        element.style.display = "block";
+
+        showName();
+    });
+</script>

@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Mode";
+}
+<a href="/">
+    <button type="button" class="btn btn-primary" id="btnBack">Quay lại</button>
+</a>
+<div style="justify-content: center; align-items: center; display: flex; flex-direction: column; margin-top: 100px;">
+
+    <button class="btn-outline-success"> <a asp-controller="Home" asp-action="GameSingle">Chơi với nhóm câu hỏi</a>  </button>
+
+    <button class="btn-outline-success"> <a asp-controller="Home" asp-action="GameRandom">Chơi với câu hỏi ngẫu nhiên</a>  </button>
+</div>
+
+<style>
+   
+    .btn-outline-success {
+        background-color: #1E90FF; /* Màu xanh nước biển */
+        color: white; /* Màu chữ trắng */
+        font-size: 20px; /* Kích thước chữ */
+        padding: 10px 20px; /* Padding để tăng kích thước button */
+        border: none; /* Bỏ viền */
+        cursor: pointer; /* Thay đổi con trỏ khi di chuột qua */
+        text-align: center;
+        transition: 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+        margin-top: 20px; /* Khoảng cách giữa các button */
+        border-radius: 12px; /* Bo góc */
+    }
+
+        .btn-outline-success:hover {
+            background-color: #00BFFF; /* Thay đổi màu khi di chuột qua */
+        }
+
+        .btn-outline-success a {
+            color: white; /* Màu chữ trắng */
+            text-decoration: none; /* Bỏ gạch chân */
+        }
+</style>

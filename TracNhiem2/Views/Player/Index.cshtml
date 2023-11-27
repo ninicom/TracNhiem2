@@ -1,0 +1,110 @@
+﻿@model IEnumerable<Player>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<head>
+    <title>Nhập tên người chơi</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        
+        .form-control {
+            width: 50%; /* Điều chỉnh theo nhu cầu */
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background-color: #1E90FF; /* Màu xanh nước biển */
+            color: white; /* Màu chữ trắng */
+            font-size: 20px; /* Kích thước chữ */
+            padding: 10px 20px; /* Padding để tăng kích thước button */
+            border: none; /* Bỏ viền */
+            cursor: pointer; /* Thay đổi con trỏ khi di chuột qua */
+            text-align: center;
+            transition: 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+            border-radius: 12px; /* Bo góc */
+        }
+
+            .btn-primary:hover {
+                background-color: #00BFFF; /* Thay đổi màu khi di chuột qua */
+            }
+    </style>
+</head>
+<body>
+    <a href="/">
+        <button type="button" class="btn btn-primary" id="btnBack">Quay lại</button>
+    </a>
+    <h3 style="text-align: center;">Nhập tên người chơi</h3>
+    <div style="display: flex; justify-content: center;">
+        <input id="name" class="form-control" style="margin-bottom: 20px;" />
+    </div>
+    <div style="display: flex; justify-content: center;">
+        <button type="button" class="btn btn-primary" id="btnSave">Lưu tên</button>
+    </div>
+    <script type="text/javascript">
+
+
+        var isExit = false;
+        var user_id = localStorage.getItem('user_id');
+        $(document).ready(function () {
+            isExit = isExitPlayer();
+        });
+
+        function isExitPlayer() {
+            $.ajax({
+                url: '/Player/PlayerExists',
+                type: 'get',
+                datatype: 'json',
+                data: {
+                    Id: user_id,
+                },
+                success: function (data) {
+                    if (data.playerExists) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            });
+        }
+        $('#btnSave').click(function () {
+            //isExitPlayer();
+            console.log(user_id);
+            var name = $("#name").val();
+            if (user_id == null || user_id == '' || !isExit) {
+                $.ajax({
+                    url: '/Player/CreatePlayer',
+                    type: 'put',
+                    datatype: 'json',
+                    data: {
+                        name: name
+                    },
+                    success: function (data) {
+                        localStorage.setItem('user_id', data.id);
+                        localStorage.setItem('user_name', name);
+                        alert("đổi tên thành công");
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    url: '/Player/UpdatePlayer',
+                    type: 'post',
+                    datatype: 'json',
+                    data: {
+                        id: user_id,
+                        name: name
+                    },
+                    success: function (data) {
+                        localStorage.setItem('user_id', data.id);
+                        localStorage.setItem('user_name', name);
+                        alert("đổi tên thành công");
+                    }
+                });
+            }
+        })
+    </script>
+</body>
